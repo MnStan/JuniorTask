@@ -95,7 +95,6 @@ final class MainView_ViewModelTests: XCTestCase {
         let expectation = expectation(description: "Waiting for fetchNextPage to complete")
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            print(sut.events.count)
             XCTAssert(sut.events.count == 2)
             expectation.fulfill()
         }

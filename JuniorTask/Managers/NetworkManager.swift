@@ -78,7 +78,7 @@ class NetworkManager: ObservableObject, NetworkManagerProtocol {
         }
         
         do {
-            guard let nextPageURL = URL(string: baseStringURL + nextPageURL + apiKey) else {
+            guard let nextPageURL = URL(string: baseStringURL + nextPageURL + apiKeyStringURL + apiKey) else {
                 throw JTError.urlError
             }
             

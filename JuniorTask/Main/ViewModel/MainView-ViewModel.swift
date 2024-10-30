@@ -14,12 +14,14 @@ extension MainView {
         
         @Published var events: [EventResponse.Embedded.Event] = []
         @Published var errorMessage: String? = nil
+        @Published var isFetching: Bool = false
         
         init(networkManager: NetworkManagerProtocol) {
             self.networkManager = networkManager
         }
         
         func fetchEvents() {
+            isFetching = true
             events = []
             errorMessage = nil
             
@@ -31,10 +33,14 @@ extension MainView {
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
+                
+                isFetching = false
             }
         }
         
         func fetchNextEvents() {
+            isFetching = true
+            
             Task { [weak self] in
                 guard let self else { return }
                 
@@ -44,6 +50,8 @@ extension MainView {
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
+                
+                isFetching = false
             }
         }
         

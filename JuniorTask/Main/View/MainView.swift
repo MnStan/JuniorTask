@@ -21,9 +21,26 @@ struct MainView: View {
             ForEach(viewModel.events, id: \.id) { element in
                 Text(element.name)
             }
+            
+            if viewModel.isFetching {
+                ProgressView()
+            } else {
+                Color.clear
+                    .frame(height: 0)
+                    .onAppear {
+                        if viewModel.canFetchMorePages() && !viewModel.isFetching{
+                            viewModel.fetchNextEvents()
+                        }
+                    }
+            }
         }
         .onAppear {
             viewModel.fetchEvents()
+        }
+        .overlay {
+            if viewModel.errorMessage != nil {
+                Text(viewModel.errorMessage ?? "")
+            }
         }
     }
 }
