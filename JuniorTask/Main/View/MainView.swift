@@ -19,7 +19,27 @@ struct MainView: View {
     var body: some View {
         List {
             ForEach(viewModel.events, id: \.id) { element in
-                Text(element.name)
+                HStack {
+                    CacheAsyncImage(url: element.images.first!.url) { phase in
+                        switch phase {
+                        case .empty:
+                            ProgressView()
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: 200)
+                        case .failure(_):
+                            Image(systemName: "questionmark.circle.fill")
+                        @unknown default:
+                            fatalError()
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    Text(element.name)
+                }
             }
             
             if viewModel.isFetching {
