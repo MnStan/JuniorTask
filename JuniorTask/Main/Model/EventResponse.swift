@@ -68,7 +68,7 @@ struct EventResponse: Decodable {
         let next: NextLink?
         
         struct NextLink: Decodable {
-            let href: URL
+            let href: String
         }
     }
 }
