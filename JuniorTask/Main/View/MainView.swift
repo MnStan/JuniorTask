@@ -8,11 +8,28 @@
 import SwiftUI
 
 struct MainView: View {
+    @ObservedObject var networkManager: NetworkManager
+    @StateObject var viewModel: ViewModel
+    
+    init(networkManager: NetworkManager) {
+        self.networkManager = networkManager
+        _viewModel = StateObject(wrappedValue: ViewModel(networkManager: networkManager))
+    }
+    
     var body: some View {
-        Text("Hello, World!")
+        List {
+            ForEach(viewModel.events, id: \.id) { element in
+                Text(element.name)
+            }
+        }
+        .onAppear {
+            viewModel.fetchEvents()
+        }
     }
 }
 
 #Preview {
-    MainView()
+    let networkManager = NetworkManager()
+    
+    return MainView(networkManager: networkManager)
 }

@@ -7,7 +7,17 @@
 
 import Foundation
 
-class NetworkManager {
+protocol NetworkManagerProtocol {
+    func getAllEvents(_ session: URLSession) async throws -> [EventResponse.Embedded.Event]
+}
+
+extension NetworkManagerProtocol {
+    func getAllEvents(_ session: URLSession = URLSession.shared) async throws -> [EventResponse.Embedded.Event] {
+        return try await getAllEvents(session)
+    }
+}
+
+class NetworkManager: ObservableObject, NetworkManagerProtocol {
     private var apiKey: String {
         get {
             guard let filePath = Bundle.main.path(forResource: "ticketmaster-info", ofType: "plist") else {
@@ -24,8 +34,8 @@ class NetworkManager {
     }
     
     private let baseStringURL = "https://app.ticketmaster.com"
-    private let allEventsStringURL: String = "/discovery/v2/events.json"
-    private let apiKeyStringURL: String = "?apikey="
+    private let allEventsStringURL: String = "/discovery/v2/events.json?countryCode=PL"
+    private let apiKeyStringURL: String = "&apikey="
     
     func getAllEvents(_ session: URLSession = URLSession.shared) async throws -> [EventResponse.Embedded.Event] {
         guard let url = URL(string: baseStringURL + allEventsStringURL + apiKeyStringURL + apiKey) else {

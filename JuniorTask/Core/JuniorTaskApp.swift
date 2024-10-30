@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct JuniorTaskApp: App {
+    @StateObject var networkManager = NetworkManager()
+    
     var body: some Scene {
         WindowGroup {
-            MainView()
+            MainView(networkManager: networkManager)
         }
     }
 }

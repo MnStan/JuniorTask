@@ -55,8 +55,8 @@ final class NetworkTests: XCTestCase {
     
     func testFetchingData() async throws {
         MockURLProtocol.requestHandler = { request in
-            let url = request.url?.absoluteString.components(separatedBy: "?apikey")[0]
-            XCTAssertEqual(url, "https://app.ticketmaster.com/discovery/v2/events.json")
+            let url = request.url?.absoluteString.components(separatedBy: "&apikey")[0]
+            XCTAssertEqual(url, "https://app.ticketmaster.com/discovery/v2/events.json?countryCode=PL")
             
             let response = HTTPURLResponse(
                 url: request.url!,
