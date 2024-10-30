@@ -22,4 +22,10 @@ class NetworkManager {
             return value
         }
     }
+    
+    private let baseStringURL = "https://app.ticketmaster.com"
+    private let allEventsStringURL: String = "/discovery/v2/events.json"
+    private let apiKeyStringURL: String = "?apikey="
+    
+    
 }
