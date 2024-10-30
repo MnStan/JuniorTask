@@ -27,5 +27,28 @@ class NetworkManager {
     private let allEventsStringURL: String = "/discovery/v2/events.json"
     private let apiKeyStringURL: String = "?apikey="
     
-    
+    func getAllEvents(_ session: URLSession = URLSession.shared) async throws -> [EventResponse.Embedded.Event] {
+        guard let url = URL(string: baseStringURL + allEventsStringURL + apiKeyStringURL + apiKey) else {
+            throw JTError.urlError
+        }
+        
+        do {
+            let (data, response) = try await session.data(from: url)
+            
+            if let response = response as? HTTPURLResponse, response.statusCode != 200 {
+                throw JTError.responseError(description: "\(response.statusCode)")
+            }
+            
+            let events = try JSONDecoder().decode(EventResponse.self, from: data)
+            
+            return events.embedded.events
+        } catch let error as JTError {
+            throw error
+        } catch let urlError as URLError {
+            throw JTError.networkError(description: urlError.localizedDescription)
+        }
+        catch {
+            throw JTError.unownedError
+        }
+    }
 }
