@@ -58,5 +58,32 @@ extension MainView {
         func canFetchMorePages() -> Bool {
             networkManager.getNextURL() != nil
         }
+        
+        /// Returns the URL for the cover image for MainView of a given event
+        /// - Parameter event: The event from which to retrieve an image
+        /// - Returns: The URL of the "RECOMMENDATION" image it it exists; otherwise the URL of the smallest available image or nil if there are no images
+        func getCoverImage(for event: EventResponse.Embedded.Event) -> URL? {
+            guard !event.images.isEmpty else { return nil }
+            
+            // Attempt to find and return the "RECOMMENDATION" image if it exists
+            if let recommendationImage = event.images.first(where: { image in
+                image.url.absoluteString.contains("RECOMENDATION")
+            })?.url {
+                return recommendationImage
+            } else {
+                // If no "RECOMMENDATION" image exists, sort images by area (width * height) in ascending order
+                let imagesArraySorted = event.images.sorted { lhs, rhs in
+                    (lhs.width * lhs.height) < (rhs.width * lhs.height)
+                }
+                
+                // Return the URL of the smallest image if one exists after sorting
+                if let firstImage = imagesArraySorted.first {
+                    return firstImage.url
+                }
+            }
+            
+            // Return nil if no image URL was found
+            return nil
+        }
     }
 }
