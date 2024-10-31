@@ -19,7 +19,39 @@ struct MainView: View {
     var body: some View {
         List {
             ForEach(viewModel.events, id: \.id) { element in
-                Text(element.name)
+                HStack {
+                    if let image = viewModel.getCoverImage(for: element) {
+                        CacheAsyncImage(url: image) { phase in
+                            switch phase {
+                            case .empty:
+                                ProgressView()
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                                    .frame(width: 150)
+                            case .failure(_):
+                                Image(systemName: "questionmark.circle.fill")
+                                    .resizable()
+                                    .frame(width: 150)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            @unknown default:
+                                fatalError()
+                            }
+                        }
+                        .border(.black, width: 1)
+                    } else {
+                        Image(systemName: "questiomark.circle.fill")
+                            .resizable()
+                            .frame(width: 150)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                    }
+
+                    Text(element.name)
+                        .border(.black, width: 1)
+                        .multilineTextAlignment(.leading)
+                }
             }
             
             if viewModel.isFetching {

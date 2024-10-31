@@ -34,6 +34,8 @@ struct EventResponse: Decodable {
             struct EventImage: Decodable {
                 let ratio: String?
                 let url: URL
+                let width: Int
+                let height: Int
             }
             
             struct EventDates: Decodable {
