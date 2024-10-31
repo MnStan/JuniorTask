@@ -38,7 +38,7 @@ class NetworkManagerMockWithDataForImageTest: NetworkManagerProtocol {
     }
     
     func getAllEvents(_ session: URLSession) async throws -> [EventResponse.Embedded.Event] {
-        return [EventResponse.Embedded.Event(id: "1", name: "", images: [EventResponse.Embedded.Event.EventImage(ratio: "", url: URL(string: "www.w.en/2kjfsaldkjf-sadf-asd-fas_ARTIST_PAGE.jpg")!, width: 300, height: 200), EventResponse.Embedded.Event.EventImage(ratio: "", url: URL(string: "www.w.en/2kjfsaldkjf-sadf-asd-asdf_SOURCE.jpg")!, width: 500, height: 700), EventResponse.Embedded.Event.EventImage(ratio: "", url: URL(string: "www.w.en/2kjfsaldkjf-sadf-asd-fas_SMALL.jpg")!, width: 100, height: 150)], dates: EventResponse.Embedded.Event.EventDates(start: EventResponse.Embedded.Event.EventDates.EventStart(localDate: "")), embedded: EventResponse.Embedded.Event.EventEmbedded(venues: [EventResponse.Embedded.Event.EventEmbedded.Venue(name: "", city: EventResponse.Embedded.Event.EventEmbedded.Venue.City(name: ""), address: EventResponse.Embedded.Event.EventEmbedded.Venue.Address(line1: ""))]))]
+        return [EventResponse.Embedded.Event(id: "1", name: "", images: [EventResponse.Embedded.Event.EventImage(ratio: "", url: URL(string: "www.w.en/2kjfsaldkjf-sadf-asd-fas_ARTIST_PAGE.jpg")!, width: 300, height: 200), EventResponse.Embedded.Event.EventImage(ratio: "", url: URL(string: "www.w.en/2kjfsaldkjf-sadf-asd-asdf_SOURCE.jpg")!, width: 500, height: 700), EventResponse.Embedded.Event.EventImage(ratio: "", url: URL(string: "www.w.en/2kjfsaldkjf-sadf-asd-fas_SMALL.jpg")!, width: 100, height: 150)], dates: EventResponse.Embedded.Event.EventDates(start: EventResponse.Embedded.Event.EventDates.EventStart(localDate: "2024-10-31")), embedded: EventResponse.Embedded.Event.EventEmbedded(venues: [EventResponse.Embedded.Event.EventEmbedded.Venue(name: "", city: EventResponse.Embedded.Event.EventEmbedded.Venue.City(name: ""), address: EventResponse.Embedded.Event.EventEmbedded.Venue.Address(line1: ""))]))]
     }
     
     func getNextPage(_ session: URLSession) async throws -> [EventResponse.Embedded.Event] {
@@ -140,6 +140,21 @@ final class MainView_ViewModelTests: XCTestCase {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             XCTAssert(sut.events.count > 0)
             XCTAssertEqual(sut.getCoverImage(for: sut.events.first!), URL(string: "www.w.en/2kjfsaldkjf-sadf-asd-fas_SMALL.jpg")!)
+            expectation.fulfill()
+        }
+        
+        wait(for: [expectation], timeout: 1.0)
+    }
+    
+    @MainActor func testConvertingDate() {
+        let networkManagerMock = NetworkManagerMockWithDataForImageTest()
+        let sut = MainView.ViewModel(networkManager: networkManagerMock)
+        let _ = sut.fetchEvents()
+        let expectation = expectation(description: "Waiting for fetchEvents to complete")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            XCTAssert(sut.events.count > 0)
+            XCTAssertEqual(sut.convertDate(date: sut.events.first!.dates.start.localDate), "31.10.2024")
             expectation.fulfill()
         }
         
