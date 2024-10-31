@@ -38,15 +38,22 @@ class NetworkManager: ObservableObject, NetworkManagerProtocol {
             return value
         }
     }
-    
-    private let baseStringURL = "https://app.ticketmaster.com"
-    private let allEventsStringURL: String = "/discovery/v2/events.json?countryCode=PL"
-    private let apiKeyStringURL: String = "&apikey="
+
     private var nextPageURL: String? = nil
     private var canFetchMorePages = true
     
     func getAllEvents(_ session: URLSession = URLSession.shared) async throws -> [EventResponse.Embedded.Event] {
-        guard let url = URL(string: baseStringURL + allEventsStringURL + apiKeyStringURL + apiKey) else {
+
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "app.ticketmaster.com"
+        components.path = "/discovery/v2/events.json"
+        components.queryItems = [
+            URLQueryItem(name: "countryCode", value: "PL"),
+            URLQueryItem(name: "apikey", value: apiKey)
+        ]
+
+        guard let url = components.url else {
             throw JTError.urlError
         }
         
@@ -77,12 +84,20 @@ class NetworkManager: ObservableObject, NetworkManagerProtocol {
             return []
         }
         
+        var components = URLComponents()
+        components.scheme = "https"
+        components.host = "app.ticketmaster.com"
+        components.path = nextPageURL
+        components.queryItems = [
+            URLQueryItem(name: "apikey", value: apiKey)
+        ]
+
+        guard let url = components.url else {
+            throw JTError.urlError
+        }
+        
         do {
-            guard let nextPageURL = URL(string: baseStringURL + nextPageURL + apiKeyStringURL + apiKey) else {
-                throw JTError.urlError
-            }
-            
-            let (data, response) = try await session.data(from: nextPageURL)
+            let (data, response) = try await session.data(from: url)
             
             if let response = response as? HTTPURLResponse, response.statusCode != 200 {
                 throw JTError.requestFailed(description: "\(response.statusCode)")
