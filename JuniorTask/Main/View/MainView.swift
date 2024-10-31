@@ -48,9 +48,20 @@ struct MainView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 10))
                     }
 
-                    Text(element.name)
-                        .border(.black, width: 1)
-                        .multilineTextAlignment(.leading)
+                    VStack {
+                        Text(element.name)
+                            .border(.black, width: 1)
+                            .multilineTextAlignment(.leading)
+                        
+                        if let date = viewModel.convertDate(date: element.dates.start.localDate) {
+                            Text(date)
+                        }
+                        
+                        ForEach(element.embedded.venues, id: \.name) { venue in
+                            Text(venue.name)
+                            Text(venue.city.name)
+                        }
+                    }
                 }
             }
             

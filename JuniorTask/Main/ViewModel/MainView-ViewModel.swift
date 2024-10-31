@@ -85,5 +85,9 @@ extension MainView {
             // Return nil if no image URL was found
             return nil
         }
+        
+        func convertDate(date: String) -> String? {
+            date.convertToCorrectFormat()
+        }
     }
 }
