@@ -8,14 +8,14 @@
 import Foundation
 
 protocol NetworkManagerProtocol {
-    func getAllEvents(_ session: URLSession) async throws -> [EventResponse.Embedded.Event]
+    func getAllEvents(_ session: URLSession, sortOption: SortOption?) async throws -> [EventResponse.Embedded.Event]
     func getNextPage(_ session: URLSession) async throws -> [EventResponse.Embedded.Event]
     func getNextURL() -> String?
 }
 
 extension NetworkManagerProtocol {
-    func getAllEvents(_ session: URLSession = URLSession.shared) async throws -> [EventResponse.Embedded.Event] {
-        return try await getAllEvents(session)
+    func getAllEvents(_ session: URLSession = URLSession.shared, sortOption: SortOption? = nil) async throws -> [EventResponse.Embedded.Event] {
+        return try await getAllEvents(session, sortOption: sortOption)
     }
     
     func getNextPage(_ session: URLSession = URLSession.shared) async throws -> [EventResponse.Embedded.Event] {
@@ -39,20 +39,26 @@ class NetworkManager: ObservableObject, NetworkManagerProtocol {
         }
     }
 
+    private var urlScheme = "https"
+    private var urlHost = "app.ticketmaster.com"
     private var nextPageURL: String? = nil
     private var canFetchMorePages = true
     
-    func getAllEvents(_ session: URLSession = URLSession.shared) async throws -> [EventResponse.Embedded.Event] {
+    func getAllEvents(_ session: URLSession = URLSession.shared, sortOption: SortOption?) async throws -> [EventResponse.Embedded.Event] {
 
         var components = URLComponents()
-        components.scheme = "https"
-        components.host = "app.ticketmaster.com"
+        components.scheme = urlScheme
+        components.host = urlHost
         components.path = "/discovery/v2/events.json"
         components.queryItems = [
             URLQueryItem(name: "countryCode", value: "PL"),
             URLQueryItem(name: "apikey", value: apiKey)
         ]
-
+        
+        if let sortOption = sortOption {
+            components.queryItems?.append(URLQueryItem(name: "sort", value: sortOption.rawValue))
+        }
+            
         guard let url = components.url else {
             throw JTError.urlError
         }
@@ -84,15 +90,14 @@ class NetworkManager: ObservableObject, NetworkManagerProtocol {
             return []
         }
         
-        var components = URLComponents()
-        components.scheme = "https"
-        components.host = "app.ticketmaster.com"
-        components.path = nextPageURL
-        components.queryItems = [
-            URLQueryItem(name: "apikey", value: apiKey)
-        ]
+        var fullURLString = "\(urlScheme)://\(urlHost)\(nextPageURL)&apikey=\(apiKey)"
 
-        guard let url = components.url else {
+        // Check if url contains random sort option if so remove ,asc. It is a bug from API. Api returns nextPageURL with random,asc sort option but that is not valid option
+        if fullURLString.contains("random") {
+            fullURLString = fullURLString.replacingOccurrences(of: ",asc", with: "")
+        }
+        
+        guard let url = URL(string: fullURLString) else {
             throw JTError.urlError
         }
         
