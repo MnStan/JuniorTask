@@ -20,7 +20,7 @@ extension MainView {
             self.networkManager = networkManager
         }
         
-        func fetchEvents() {
+        func fetchEvents(sortOption: SortOption? = nil) {
             isFetching = true
             events = []
             errorMessage = nil
@@ -29,7 +29,7 @@ extension MainView {
                 guard let self else { return }
                 
                 do {
-                    self.events = try await self.networkManager.getAllEvents()
+                    self.events = try await self.networkManager.getAllEvents(sortOption: sortOption)
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }

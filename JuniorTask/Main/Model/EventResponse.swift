@@ -52,7 +52,7 @@ struct EventResponse: Decodable {
                 struct Venue: Decodable {
                     let name: String
                     let city: City
-                    let address: Address
+                    let address: Address?
                     
                     struct City: Decodable {
                         let name: String
