@@ -31,7 +31,7 @@ struct MainView: View {
                         ScrollView {
                             LazyVStack(spacing: 15) {
                                 ForEach(viewModel.events, id: \.id) { element in
-                                    NavigationLink(destination: DetailsView(networkManager: self.networkManager)) {
+                                    NavigationLink(destination: DetailsView(networkManager: networkManager, selectedID: element.id)) {
                                         HStack {
                                             if let image = viewModel.getCoverImage(for: element) {
                                                 ImageView(image: image)
