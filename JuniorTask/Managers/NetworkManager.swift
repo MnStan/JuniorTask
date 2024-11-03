@@ -11,15 +11,32 @@ protocol NetworkManagerProtocol {
     func getAllEvents(_ session: URLSession, sortOption: SortOption?) async throws -> [EventResponse.Embedded.Event]
     func getNextPage(_ session: URLSession) async throws -> [EventResponse.Embedded.Event]
     func getNextURL() -> String?
+    func getEventDetails(_ session: URLSession, for event: String) async throws -> DetailEventResponse
 }
 
 extension NetworkManagerProtocol {
     func getAllEvents(_ session: URLSession = URLSession.shared, sortOption: SortOption? = nil) async throws -> [EventResponse.Embedded.Event] {
-        return try await getAllEvents(session, sortOption: sortOption)
+        do {
+            return try await getAllEvents(session, sortOption: sortOption)
+        } catch {
+            throw error
+        }
     }
     
     func getNextPage(_ session: URLSession = URLSession.shared) async throws -> [EventResponse.Embedded.Event] {
-        return try await getNextPage(session)
+        do {
+            return try await getNextPage(session)
+        } catch {
+            throw error
+        }
+    }
+    
+    func getEventDetails(_ session: URLSession = URLSession.shared, for event: String) async throws -> DetailEventResponse {
+        do {
+            return try await getEventDetails(session, for: event)
+        } catch {
+            throw error
+        }
     }
 }
 
@@ -124,5 +141,38 @@ class NetworkManager: ObservableObject, NetworkManagerProtocol {
     
     func getNextURL() -> String? {
         nextPageURL
+    }
+    
+    func getEventDetails(_ session: URLSession = URLSession.shared, for event: String) async throws -> DetailEventResponse {
+        var components = URLComponents()
+        components.scheme = urlScheme
+        components.host = urlHost
+        components.path = "/discovery/v2/events/\(event).json"
+        components.queryItems = [
+            URLQueryItem(name: "apikey", value: apiKey)
+        ]
+            
+        guard let url = components.url else {
+            throw JTError.urlError
+        }
+        
+        do {
+            let (data, response) = try await session.data(from: url)
+            
+            if let response = response as? HTTPURLResponse, response.statusCode != 200 {
+                throw JTError.requestFailed(description: "\(response.statusCode)")
+            }
+            
+            let eventDetails = try JSONDecoder().decode(DetailEventResponse.self, from: data)
+            
+            return eventDetails
+        }  catch let error as JTError {
+            throw error
+        } catch let urlError as URLError {
+            throw JTError.networkError(description: urlError.localizedDescription)
+        }
+        catch {
+            throw JTError.unownedError
+        }
     }
 }
