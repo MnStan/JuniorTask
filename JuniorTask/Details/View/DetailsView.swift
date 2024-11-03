@@ -41,8 +41,7 @@ struct DetailsView: View {
                                     AsyncImage(url: image) { image in
                                         image
                                             .resizable()
-                                            .scaledToFit()
-                                            .frame(maxWidth: .infinity)
+                                            .aspectRatio(contentMode: .fit)
                                             .clipShape(RoundedRectangle(cornerRadius: 20))
                                             .padding([.leading, .trailing])
                                             .shadow(radius: 10)
@@ -51,7 +50,7 @@ struct DetailsView: View {
                                     }
                                 }
                             }
-                            .frame(height: geometry.size.height / 2)
+                            .frame(height: geometry.size.height < geometry.size.width ? geometry.size.height / 1.2 : geometry.size.height / 2)
                             .tabViewStyle(.page)
                             .indexViewStyle(.page(backgroundDisplayMode: .always))
                         }
@@ -89,7 +88,7 @@ struct DetailsView: View {
                             AsyncImage(url: mapURL) { image in
                                 image
                                     .resizable()
-                                    .scaledToFit()
+                                    .aspectRatio(contentMode: .fit)
                                     .frame(maxWidth: .infinity)
                                     .clipShape(RoundedRectangle(cornerRadius: 20))
                                     .padding([.leading, .trailing])
