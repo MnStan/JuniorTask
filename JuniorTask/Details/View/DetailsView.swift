@@ -8,11 +8,15 @@
 import SwiftUI
 
 struct DetailsView: View {
+    @ObservedObject var networkManager: NetworkManager
+    
     var body: some View {
         Text("Hello, World!")
     }
 }
 
 #Preview {
-    DetailsView()
+    let networkManager = MainNetworkManagerMock()
+    
+    DetailsView(networkManager: networkManager)
 }

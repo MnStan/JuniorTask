@@ -18,6 +18,7 @@ extension MainView {
         
         init(networkManager: NetworkManagerProtocol) {
             self.networkManager = networkManager
+            fetchEvents()
         }
         
         func fetchEvents(sortOption: SortOption? = nil) {
