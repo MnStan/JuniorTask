@@ -15,14 +15,17 @@ extension DetailsView {
         @Published var event: DetailEventResponse?
         @Published var errorMessage: String? = nil
         @Published var imagesURLs: [URL] = []
+        @Published var isLoading = false
         
         init(networkManager: NetworkManagerProtocol) {
             self.networkManager = networkManager
         }
         
         func fetchEventDetails(for event: String) {
+            isLoading = true
             self.event = nil
             errorMessage = nil
+            imagesURLs = []
             
             Task { [weak self] in
                 guard let self else { return }
@@ -33,16 +36,18 @@ extension DetailsView {
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
+                
+                self.isLoading = false
             }
         }
         
         func getSeatMapImage() -> URL? {
-            return event?.seatmap.staticUrl
+            return event?.seatmap?.staticUrl
         }
         
         func getImagesToDisplay() {
             let groupedImages = groupImages(images: event?.images ?? [])
-
+            
             for images in groupedImages.values {
                 if images.count == 1 {
                     if let firstImage = images.first {
@@ -77,6 +82,59 @@ extension DetailsView {
             }
             
             return retinaImages.max(by: { ($0.height * $0.width) < ($1.height * $1.width) })
+        }
+        
+        func getName() -> String? {
+            event?.name
+        }
+        
+        func getInformations() -> [(String, String)] {
+            var informations: [String: String] = [:]
+            
+            if let event = event {
+                if let classifications = event.classifications.first {
+                    informations["igatunek"] = classifications.segment.name
+                }
+                
+                informations["cdata"] = event.dates.start.localDate.convertToCorrectFormat()
+                informations["dczas"] = event.dates.start.localTime?.convertTimeToCorrectFormat()
+                
+                if let venueName = event.embedded.venues.first?.name {
+                    informations["gObiekt"] = venueName
+                }
+                
+                if let classification = event.embedded.attractions?.first {
+                    informations["bnazwa_zespołu"] = classification.name
+                }
+                
+                if let cityName = event.embedded.venues.first?.city {
+                    informations["fmiasto"] = cityName.name
+                }
+                
+                if let countryName = event.embedded.venues.first?.country {
+                    informations["ekraj"] = countryName.name
+                }
+                
+                if let venueAddress = event.embedded.venues.first?.address {
+                    informations["hadres"] = venueAddress.line1
+                }
+                
+                if let minimumPrice = event.priceRanges?.first {
+                    informations["jod:"] = "\(minimumPrice.min) \(minimumPrice.currency)"
+                }
+                
+                
+            }
+            
+            return informations.sorted { $0.key < $1.key }
+        }
+        
+        func getMapURL() -> URL? {
+            event?.seatmap?.staticUrl
+        }
+        
+        func prepareKeyToDisplay(to display: String) -> String {
+            display.dropFirst().capitalized.replacingOccurrences(of: "_", with: " ")
         }
     }
 }
