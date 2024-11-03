@@ -51,7 +51,11 @@ struct CacheAsyncImage<Content>: View where Content: View {
                     }
                 case .empty:
                     // Show progress indicator while image is being rendered
-                    ProgressView()
+                    ZStack {
+                        ProgressView()
+                        Color.clear
+                            .frame(width: 150, height: 100)
+                    }
                 @unknown default:
                     fatalError()
                 }
