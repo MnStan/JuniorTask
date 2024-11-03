@@ -19,7 +19,7 @@ struct DetailsView: View {
     }
     
     var body: some View {
-        VStack {
+        ScrollView {
             Text(viewModel.errorMessage ?? "No error")
             Text(selectedID)
             Text(viewModel.event?.name ?? "")
@@ -30,10 +30,32 @@ struct DetailsView: View {
             Text(viewModel.event?.embedded.venues.first?.address?.line1 ?? "")
             Text(viewModel.event?.embedded.venues.first?.city.name ?? "")
             Text("\(viewModel.event?.priceRanges?.first?.min ?? 3)")
-        }
-            .onAppear {
-                viewModel.fetchEventDetails(for: selectedID)
+            
+            ForEach(viewModel.imagesURLs, id: \.self) { image in
+                AsyncImage(url: image) { Image in
+                    Image
+                        .resizable()
+                        .frame(width: 300, height: 300)
+                } placeholder: {
+                    Image(systemName: "chevron.right")
+                }
+
             }
+            
+            if let seatMap = viewModel.getSeatMapImage() {
+                AsyncImage(url: seatMap) { image in
+                    image
+                        .resizable()
+                        .frame(width: 300, height: 300)
+                } placeholder: {
+                    Image(systemName: "chevron.right")
+                }
+
+            }
+        }
+        .onAppear {
+            viewModel.fetchEventDetails(for: selectedID)
+        }
     }
 }
 

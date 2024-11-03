@@ -15,15 +15,16 @@ struct DetailEventResponse: Decodable {
     let embedded: DetailEventEmbedded
     let priceRanges: [PriceRange]?
     let classifications: [EventClassification]
+    let seatmap: SeatMap
     
     enum CodingKeys: String, CodingKey {
-        case id, name, images, dates, priceRanges, classifications
+        case id, name, images, dates, priceRanges, classifications, seatmap
         case embedded = "_embedded"
     }
     
     struct DetailEventEmbedded: Decodable {
         let venues: [EventResponse.Embedded.Event.EventEmbedded.Venue]
-        let attractions: [Attraction]
+        let attractions: [Attraction]?
         
         struct Attraction: Decodable {
             let name: String
@@ -41,7 +42,7 @@ struct DetailEventResponse: Decodable {
     
     struct PriceRange: Decodable {
         let currency: String
-        let min: Int
+        let min: Double
     }
     
     struct EventClassification: Decodable {
@@ -52,5 +53,10 @@ struct DetailEventResponse: Decodable {
             let id: String
             let name: String
         }
+    }
+    
+    struct SeatMap: Decodable {
+        let id: String
+        let staticUrl: URL
     }
 }

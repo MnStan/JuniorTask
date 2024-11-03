@@ -44,7 +44,6 @@ extension MainView {
             
             Task { [weak self] in
                 guard let self else { return }
-                
                 do {
                     let nextEvents = try await self.networkManager.getNextPage()
                     self.events.append(contentsOf: nextEvents)
