@@ -53,6 +53,7 @@ struct EventResponse: Decodable {
                     let name: String
                     let city: City
                     let address: Address?
+                    let country: Country
                     
                     struct City: Decodable {
                         let name: String
@@ -60,6 +61,10 @@ struct EventResponse: Decodable {
                     
                     struct Address: Decodable {
                         let line1: String
+                    }
+                    
+                    struct Country: Decodable {
+                        let name: String
                     }
                 }
             }

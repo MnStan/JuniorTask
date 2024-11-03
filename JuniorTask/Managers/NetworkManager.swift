@@ -172,7 +172,6 @@ class NetworkManager: ObservableObject, NetworkManagerProtocol {
             throw JTError.networkError(description: urlError.localizedDescription)
         }
         catch {
-            print(error)
             throw JTError.unownedError
         }
     }

@@ -18,39 +18,88 @@ struct DetailsView: View {
         self.selectedID = selectedID
     }
     
+    private func createGridColumns(width: CGFloat) -> [GridItem] {
+        [GridItem(.fixed(width), alignment: .leading),
+        GridItem(.fixed(width), alignment: .leading)]
+    }
+    
     var body: some View {
-        ScrollView {
-            Text(viewModel.errorMessage ?? "No error")
-            Text(selectedID)
-            Text(viewModel.event?.name ?? "")
-            Text(viewModel.event?.classifications.first!.segment.name ?? "")
-            Text(viewModel.event?.dates.start.localDate ?? "")
-            Text(viewModel.event?.dates.start.localTime ?? "")
-            Text(viewModel.event?.embedded.venues.first?.name ?? "")
-            Text(viewModel.event?.embedded.venues.first?.address?.line1 ?? "")
-            Text(viewModel.event?.embedded.venues.first?.city.name ?? "")
-            Text("\(viewModel.event?.priceRanges?.first?.min ?? 3)")
-            
-            ForEach(viewModel.imagesURLs, id: \.self) { image in
-                AsyncImage(url: image) { Image in
-                    Image
-                        .resizable()
-                        .frame(width: 300, height: 300)
-                } placeholder: {
-                    Image(systemName: "chevron.right")
+        ZStack {
+            LinearGradient(colors: [Color.gray.opacity(0.75), .blue.opacity(0.25)], startPoint: .bottom, endPoint: .top).ignoresSafeArea()
+                .overlay {
+                    Color.clear
+                        .background(.thinMaterial)
                 }
-
-            }
             
-            if let seatMap = viewModel.getSeatMapImage() {
-                AsyncImage(url: seatMap) { image in
-                    image
-                        .resizable()
-                        .frame(width: 300, height: 300)
-                } placeholder: {
-                    Image(systemName: "chevron.right")
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack {
+                        if !viewModel.imagesURLs.isEmpty {
+                            TabView {
+                                ForEach(viewModel.imagesURLs, id: \.self) { image in
+                                    AsyncImage(url: image) { image in
+                                        image
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(maxWidth: .infinity)
+                                            .clipShape(RoundedRectangle(cornerRadius: 20))
+                                            .padding([.leading, .trailing])
+                                            .shadow(radius: 10)
+                                    } placeholder: {
+                                        ProgressView()
+                                    }
+                                }
+                            }
+                            .frame(height: geometry.size.height / 2)
+                            .tabViewStyle(.page)
+                            .indexViewStyle(.page(backgroundDisplayMode: .always))
+                        }
+                        
+                        if let name = viewModel.getName() {
+                            Text(name)
+                                .font(.title)
+                                .bold()
+                                .multilineTextAlignment(.center)
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                        }
+                        
+                        Divider()
+                            .padding([.leading, .trailing])
+                        
+                        LazyVGrid(columns: createGridColumns(width: geometry.size.width / 2.5)) {
+                            ForEach(viewModel.getInformations(), id: \.1) { item in
+                                VStack(alignment: .leading) {
+                                    Text(viewModel.prepareKeyToDisplay(to: item.0))
+                                        .font(.caption)
+                                        .bold()
+                                        .foregroundStyle(.gray)
+                                    Text(item.1)
+                                }
+                                .padding()
+                            }
+                        }
+                        .padding()
+                        
+                        Divider()
+                            .padding([.leading, .trailing])
+                        
+                        if let mapURL = viewModel.getMapURL() {
+                            AsyncImage(url: mapURL) { image in
+                                image
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(maxWidth: .infinity)
+                                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                                    .padding([.leading, .trailing])
+                                    .shadow(radius: 10)
+                            } placeholder: {
+                                ProgressView()
+                            }
+                            .padding()
+                        }
+                    }
                 }
-
             }
         }
         .onAppear {
@@ -60,7 +109,7 @@ struct DetailsView: View {
 }
 
 #Preview {
-    let networkManager = MainNetworkManagerMock()
+    let networkManager = DetailNetworkManagerMock()
     
     DetailsView(networkManager: networkManager, selectedID: "Z698xZQpZaF52")
 }

@@ -15,7 +15,7 @@ struct DetailEventResponse: Decodable {
     let embedded: DetailEventEmbedded
     let priceRanges: [PriceRange]?
     let classifications: [EventClassification]
-    let seatmap: SeatMap
+    let seatmap: SeatMap?
     
     enum CodingKeys: String, CodingKey {
         case id, name, images, dates, priceRanges, classifications, seatmap

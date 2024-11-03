@@ -21,4 +21,18 @@ extension String {
         
         return nil
     }
+    
+    func convertTimeToCorrectFormat() -> String? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "HH:mm:ss"
+        
+        if let date = dateFormatter.date(from: self) {
+            
+            dateFormatter.dateFormat = "HH:mm"
+            
+            return dateFormatter.string(from: date)
+        }
+        
+        return nil
+    }
 }
