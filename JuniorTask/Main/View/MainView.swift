@@ -10,7 +10,7 @@ import SwiftUI
 struct MainView: View {
     @ObservedObject var networkManager: NetworkManager
     @StateObject var viewModel: ViewModel
-    @State var sortOption: SortOption = .dateASC
+    @State var sortOption: SortOption = .relevanceDESC
     
     init(networkManager: NetworkManager) {
         self.networkManager = networkManager
@@ -18,84 +18,79 @@ struct MainView: View {
     }
     
     var body: some View {
-        VStack {
-            Picker(selection: $sortOption) {
-                ForEach(SortOption.allCases) { option in
-                    Text(option.description)
-                }
-            } label: {
-                Text("Sort by:")
-            }
-            .onChange(of: sortOption) { newValue in
-                viewModel.fetchEvents(sortOption: sortOption)
-            }
-
-            List {
-                ForEach(viewModel.events, id: \.id) { element in
-                    HStack {
-                        if let image = viewModel.getCoverImage(for: element) {
-                            CacheAsyncImage(url: image) { phase in
-                                switch phase {
-                                case .empty:
+        NavigationStack {
+            GeometryReader { geometry in
+                ZStack {
+                    LinearGradient(colors: [Color.gray.opacity(0.75), .blue.opacity(0.25)], startPoint: .bottom, endPoint: .top).ignoresSafeArea()
+                        .overlay {
+                            Color.clear
+                                .background(.thinMaterial)
+                        }
+                    
+                    VStack {
+                        ScrollView {
+                            LazyVStack(spacing: 15) {
+                                ForEach(viewModel.events, id: \.id) { element in
+                                    NavigationLink(destination: DetailsView(networkManager: self.networkManager)) {
+                                        HStack {
+                                            if let image = viewModel.getCoverImage(for: element) {
+                                                ImageView(image: image)
+                                            }
+                                            
+                                            EventInformationsView(event: element, date: viewModel.convertDate(date: element.dates.start.localDate))
+                                                .frame(width: (geometry.size.width / 2) - 25)
+                                            
+                                            Image(systemName: "chevron.right")
+                                        }
+                                        .padding(10)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
+                                }
+                                .background(.thinMaterial)
+                                .clipShape(RoundedRectangle(cornerRadius: 10))
+                                .shadow(radius: 5)
+                                
+                                if viewModel.isFetching {
                                     ProgressView()
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fit)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                        .frame(width: 150)
-                                case .failure(_):
-                                    Image(systemName: "questionmark.circle.fill")
-                                        .resizable()
-                                        .frame(width: 150)
-                                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                                @unknown default:
-                                    fatalError()
+                                } else {
+                                    Color.clear
+                                        .frame(height: 0)
+                                        .onAppear {
+                                            if viewModel.canFetchMorePages() && !viewModel.isFetching{
+                                                viewModel.fetchNextEvents()
+                                            }
+                                        }
                                 }
                             }
-                            .border(.black, width: 1)
-                        } else {
-                            Image(systemName: "questiomark.circle.fill")
-                                .resizable()
-                                .frame(width: 150)
-                                .clipShape(RoundedRectangle(cornerRadius: 10))
-                        }
-                        
-                        VStack {
-                            Text(element.name)
-                                .border(.black, width: 1)
-                                .multilineTextAlignment(.leading)
-                            
-                            if let date = viewModel.convertDate(date: element.dates.start.localDate) {
-                                Text(date)
-                            }
-                            
-                            ForEach(element.embedded.venues, id: \.name) { venue in
-                                Text(venue.name)
-                                Text(venue.city.name)
+                            .padding([.top], 15)
+                            .overlay {
+                                if viewModel.errorMessage != nil {
+                                    Text(viewModel.errorMessage ?? "")
+                                }
                             }
                         }
                     }
                 }
-                
-                if viewModel.isFetching {
-                    ProgressView()
-                } else {
-                    Color.clear
-                        .frame(height: 0)
-                        .onAppear {
-                            if viewModel.canFetchMorePages() && !viewModel.isFetching{
-                                viewModel.fetchNextEvents()
+            }
+            .navigationTitle("Wydarzenia")
+            .toolbar {
+                Menu {
+                    ForEach(SortOption.allCases) { option in
+                        Button {
+                            sortOption = option
+                        } label: {
+                            if option == sortOption {
+                                Label(option.description, systemImage: "checkmark")
+                            } else {
+                                Text(option.description)
                             }
                         }
+                    }
+                } label: {
+                    Image(systemName: "arrow.up.arrow.down")
                 }
-            }
-            .onAppear {
-                viewModel.fetchEvents()
-            }
-            .overlay {
-                if viewModel.errorMessage != nil {
-                    Text(viewModel.errorMessage ?? "")
+                .onChange(of: sortOption) { newValue in
+                    viewModel.fetchEvents(sortOption: sortOption)
                 }
             }
         }
@@ -103,7 +98,7 @@ struct MainView: View {
 }
 
 #Preview {
-    let networkManager = NetworkManager()
+    let networkManager = MainNetworkManagerMock()
     
-    return MainView(networkManager: networkManager)
+    MainView(networkManager: networkManager)
 }
