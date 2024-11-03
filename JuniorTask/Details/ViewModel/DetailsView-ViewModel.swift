@@ -33,12 +33,19 @@ extension DetailsView {
                 do {
                     self.event = try await self.networkManager.getEventDetails(for: event)
                     getImagesToDisplay()
+                } catch let error as JTError {
+                    self.errorMessage = error.description
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
+
                 
                 self.isLoading = false
             }
+        }
+        
+        func fetchAgain(for event: String) {
+            fetchEventDetails(for: event)
         }
         
         func getSeatMapImage() -> URL? {

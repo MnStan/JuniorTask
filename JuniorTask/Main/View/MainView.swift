@@ -11,6 +11,7 @@ struct MainView: View {
     @ObservedObject var networkManager: NetworkManager
     @StateObject var viewModel: ViewModel
     @State var sortOption: SortOption = .relevanceDESC
+    @State var isShowingAlert = false
     
     init(networkManager: NetworkManager) {
         self.networkManager = networkManager
@@ -63,11 +64,6 @@ struct MainView: View {
                                 }
                             }
                             .padding([.top], 15)
-                            .overlay {
-                                if viewModel.errorMessage != nil {
-                                    Text(viewModel.errorMessage ?? "")
-                                }
-                            }
                         }
                     }
                 }
@@ -93,6 +89,18 @@ struct MainView: View {
                     viewModel.fetchEvents(sortOption: sortOption)
                 }
             }
+        }
+        .onChange(of: viewModel.errorMessage) { newValue in
+            if newValue != nil {
+                isShowingAlert.toggle()
+            }
+        }
+        .alert("Coś poszło nie tak", isPresented: $isShowingAlert) {
+            Button("Ok") {
+                viewModel.fetchAgain()
+            }
+        } message: {
+            Text(viewModel.errorMessage?.description ?? "Wystąpił nieznany błąd")
         }
     }
 }
