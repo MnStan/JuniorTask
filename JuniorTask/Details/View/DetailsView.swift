@@ -11,6 +11,7 @@ struct DetailsView: View {
     @ObservedObject var networkManager: NetworkManager
     @StateObject var viewModel: ViewModel
     var selectedID: String
+    @State var isShowingAlert = false
     
     init(networkManager: NetworkManager, selectedID: String) {
         self.networkManager = networkManager
@@ -104,6 +105,18 @@ struct DetailsView: View {
         }
         .onAppear {
             viewModel.fetchEventDetails(for: selectedID)
+        }
+        .onChange(of: viewModel.errorMessage) { newValue in
+            if newValue != nil {
+                isShowingAlert.toggle()
+            }
+        }
+        .alert("Coś poszło nie tak", isPresented: $isShowingAlert) {
+            Button("Ok") {
+                viewModel.fetchAgain(for: selectedID)
+            }
+        } message: {
+            Text(viewModel.errorMessage?.description ?? "Wystąpił nieznany błąd")
         }
     }
 }

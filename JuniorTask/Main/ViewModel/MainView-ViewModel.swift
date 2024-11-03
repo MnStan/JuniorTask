@@ -31,12 +31,18 @@ extension MainView {
                 
                 do {
                     self.events = try await self.networkManager.getAllEvents(sortOption: sortOption)
+                } catch let error as JTError {
+                    self.errorMessage = error.description
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
                 
                 isFetching = false
             }
+        }
+        
+        func fetchAgain() {
+            fetchEvents()
         }
         
         func fetchNextEvents() {
@@ -47,9 +53,12 @@ extension MainView {
                 do {
                     let nextEvents = try await self.networkManager.getNextPage()
                     self.events.append(contentsOf: nextEvents)
+                } catch let error as JTError {
+                    self.errorMessage = error.description
                 } catch {
                     self.errorMessage = error.localizedDescription
                 }
+
                 
                 isFetching = false
             }
