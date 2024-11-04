@@ -88,7 +88,7 @@ extension DetailsView {
                 image.url.absoluteString.contains("RETINA")
             }
             
-            return retinaImages.max(by: { ($0.height * $0.width) < ($1.height * $1.width) })
+            return retinaImages.max(by: { ($0.height * $0.width) > ($1.height * $1.width) })
         }
         
         func getName() -> String? {
